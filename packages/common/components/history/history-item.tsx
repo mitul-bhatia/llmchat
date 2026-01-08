@@ -1,3 +1,4 @@
+import { useRootContext } from '@repo/common/context';
 import { useChatStore } from '@repo/common/store';
 import { Thread } from '@repo/shared/types';
 import {
@@ -32,6 +33,7 @@ export const HistoryItem = ({
 }) => {
     const { push } = useRouter();
     const { threadId: currentThreadId } = useParams();
+    const { setIsMobileSidebarOpen } = useRootContext();
     const updateThread = useChatStore(state => state.updateThread);
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(thread.title);

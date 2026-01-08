@@ -11,7 +11,7 @@ import { AgentProvider } from '@repo/common/hooks';
 import { useAppStore } from '@repo/common/store';
 import { plausible } from '@repo/shared/utils';
 import { Badge, Button, Flex, Toaster } from '@repo/ui';
-import { IconMoodSadDizzy, IconX } from '@tabler/icons-react';
+import { IconX, IconMenu2 } from '@tabler/icons-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { FC, useEffect } from 'react';
@@ -35,19 +35,26 @@ export const RootLayout: FC<TRootLayout> = ({ children }) => {
 
     return (
         <div className="bg-tertiary flex h-[100dvh] w-full flex-row overflow-hidden">
-            <div className="bg-tertiary item-center fixed inset-0 z-[99999] flex justify-center md:hidden">
-                <div className="flex flex-col items-center justify-center gap-2">
-                    <IconMoodSadDizzy size={24} strokeWidth={2} className="text-muted-foreground" />
-                    <span className="text-muted-foreground text-center text-sm">
-                        Mobile version is coming soon.
-                        <br /> Please use a desktop browser.
-                    </span>
-                </div>
+            {/* Mobile Header with Hamburger */}
+            <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur-sm border-b border-border p-4 md:hidden">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileSidebarOpen(true)}
+                    className="shrink-0"
+                >
+                    <IconMenu2 size={20} strokeWidth={2} />
+                </Button>
+                <div className="text-sm font-medium">LLMChat</div>
+                <div className="w-8" /> {/* Spacer for centering */}
             </div>
-            <Flex className="hidden lg:flex">
+
+            {/* Desktop Sidebar */}
+            <Flex className="hidden md:flex">
                 <AnimatePresence>{isSidebarOpen && <Sidebar />}</AnimatePresence>
             </Flex>
 
+            {/* Mobile Sidebar Drawer */}
             <Drawer.Root
                 open={isMobileSidebarOpen}
                 direction="left"
@@ -71,7 +78,9 @@ export const RootLayout: FC<TRootLayout> = ({ children }) => {
                         <div className={containerClass}>
                             <div className="relative flex h-full w-0 flex-1 flex-row">
                                 <div className="flex w-full flex-col gap-2 overflow-y-auto">
-                                    <div className="from-secondary to-secondary/0 via-secondary/70 absolute left-0 right-0 top-0 z-40 flex flex-row items-center justify-center gap-1 bg-gradient-to-b p-2 pb-12"></div>
+                                    {/* Mobile content padding for header */}
+                                    <div className="md:hidden h-16 shrink-0" />
+                                    <div className="from-secondary to-secondary/0 via-secondary/70 absolute left-0 right-0 top-0 z-40 flex flex-row items-center justify-center gap-1 bg-gradient-to-b p-2 pb-12 md:block hidden"></div>
                                     {/* Auth Button Header */}
 
                                     {children}

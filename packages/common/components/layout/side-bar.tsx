@@ -1,16 +1,17 @@
 import { SignInButton, useAuth, UserButton } from '@clerk/nextjs';
 import { FullPageLoader, HistoryItem } from '@repo/common/components';
 import { useRootContext } from '@repo/common/context';
-import { Thread, useAppStore, useChatStore } from '@repo/common/store';
+import { useAppStore, useChatStore } from '@repo/common/store';
+import { Thread } from '@repo/shared/types';
 import { Button, cn, Flex } from '@repo/ui';
-import { IconArrowBarLeft, IconArrowBarRight, IconPlus, IconSearch } from '@tabler/icons-react';
+import { IconArrowBarLeft, IconArrowBarRight, IconPlus, IconSearch, IconX } from '@tabler/icons-react';
 import moment from 'moment';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 
 export const Sidebar = () => {
     const { threadId: currentThreadId } = useParams();
     const pathname = usePathname();
-    const { setIsCommandSearchOpen } = useRootContext();
+    const { setIsCommandSearchOpen, isMobileSidebarOpen, setIsMobileSidebarOpen } = useRootContext();
     const { push } = useRouter();
     const isChatPage = pathname.startsWith('/chat');
     const threads = useChatStore(state => state.threads);
@@ -75,11 +76,27 @@ export const Sidebar = () => {
         <div
             className={cn(
                 'border-border/0 relative bottom-0 left-0 top-0 z-[50] flex h-[100dvh] flex-shrink-0 flex-col border-r border-dashed py-2 transition-all duration-200',
+                // Desktop styles
+                'md:bg-background md:border-border/70 md:shadow-xs',
                 isSidebarOpen
-                    ? 'bg-background border-border/70 shadow-xs top-0 h-full w-[240px] border-r'
-                    : 'w-[50px]'
+                    ? 'md:w-[240px] md:border-r'
+                    : 'md:w-[50px]',
+                // Mobile styles - always full width when open
+                'bg-background border-border/70 shadow-xs w-[280px] border-r'
             )}
         >
+            {/* Mobile close button */}
+            <div className="flex justify-end p-2 md:hidden">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="shrink-0"
+                >
+                    <IconX size={16} strokeWidth={2} />
+                </Button>
+            </div>
+
             <Flex direction="col" className="w-full flex-1 overflow-hidden">
                 <Flex direction="col" className="w-full px-2" gap="sm">
                     <Button
@@ -89,14 +106,18 @@ export const Sidebar = () => {
                         tooltip={isSidebarOpen ? undefined : 'New Thread'}
                         tooltipSide="right"
                         className={cn('relative w-full shadow-sm', 'justify-center')}
-                        onClick={() => !isChatPage && push('/chat')}
+                        onClick={() => {
+                            if (!isChatPage) push('/chat');
+                            // Close mobile sidebar when navigating
+                            if (isMobileSidebarOpen) setIsMobileSidebarOpen(false);
+                        }}
                     >
                         <IconPlus
                             size={16}
                             strokeWidth={2}
-                            className={cn(isSidebarOpen && 'absolute left-2')}
+                            className={cn((isSidebarOpen || isMobileSidebarOpen) && 'absolute left-2')}
                         />
-                        {isSidebarOpen && 'New'}
+                        {(isSidebarOpen || isMobileSidebarOpen) && 'New'}
                     </Button>
                     <Button
                         size={isSidebarOpen ? 'sm' : 'icon'}
@@ -105,14 +126,18 @@ export const Sidebar = () => {
                         tooltip={isSidebarOpen ? undefined : 'Search'}
                         tooltipSide="right"
                         className={cn('relative w-full', 'justify-center')}
-                        onClick={() => setIsCommandSearchOpen(true)}
+                        onClick={() => {
+                            setIsCommandSearchOpen(true);
+                            // Close mobile sidebar when opening search
+                            if (isMobileSidebarOpen) setIsMobileSidebarOpen(false);
+                        }}
                     >
                         <IconSearch
                             size={16}
                             strokeWidth={2}
-                            className={cn(isSidebarOpen && 'absolute left-2')}
+                            className={cn((isSidebarOpen || isMobileSidebarOpen) && 'absolute left-2')}
                         />
-                        {isSidebarOpen && 'Search'}
+                        {(isSidebarOpen || isMobileSidebarOpen) && 'Search'}
                     </Button>
                 </Flex>
 
@@ -124,7 +149,7 @@ export const Sidebar = () => {
                         gap="md"
                         className={cn(
                             'border-border/70 mt-3 w-full flex-1 overflow-y-auto border-t border-dashed p-3',
-                            isSidebarOpen ? 'flex' : 'hidden'
+                            (isSidebarOpen || isMobileSidebarOpen) ? 'flex' : 'hidden md:hidden'
                         )}
                     >
                         {renderGroup('Today', groupedThreads.today)}
@@ -139,15 +164,15 @@ export const Sidebar = () => {
                     className="mt-auto w-full p-2"
                     gap="xs"
                     direction={'col'}
-                    justify={isSidebarOpen ? 'between' : 'center'}
+                    justify={(isSidebarOpen || isMobileSidebarOpen) ? 'between' : 'center'}
                 >
-                    {isSidebarOpen && (
-                        <Flex className="w-full items-center justify-between px-2">
+                    {/* Desktop sidebar toggle - only show on desktop */}
+                    {(isSidebarOpen || isMobileSidebarOpen) && (
+                        <Flex className="w-full items-center justify-between px-2 md:flex hidden">
                             <Button
                                 variant="ghost"
-                                size={isSidebarOpen ? 'sm' : 'icon'}
+                                size="sm"
                                 onClick={() => setIsSidebarOpen(prev => !prev)}
-                                className={cn(!isSidebarOpen && 'mx-auto')}
                                 tooltip="Close Sidebar"
                             >
                                 <IconArrowBarLeft size={16} strokeWidth={2} /> Close
@@ -159,7 +184,7 @@ export const Sidebar = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => setIsSidebarOpen(prev => !prev)}
-                            className={cn(!isSidebarOpen && 'mx-auto')}
+                            className="mx-auto hidden md:flex"
                         >
                             <IconArrowBarRight size={16} strokeWidth={2} />
                         </Button>
