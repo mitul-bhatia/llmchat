@@ -19,7 +19,6 @@ export const Sidebar = () => {
     const sortThreads = (threads: Thread[], sortBy: 'createdAt') => {
         return [...threads].sort((a, b) => moment(b[sortBy]).diff(moment(a[sortBy])));
     };
-    const clearAllThreads = useChatStore(state => state.clearAllThreads);
     const setIsSidebarOpen = useAppStore(state => state.setIsSidebarOpen);
     const isSidebarOpen = useAppStore(state => state.isSidebarOpen);
 
@@ -62,9 +61,11 @@ export const Sidebar = () => {
                             thread={thread}
                             key={thread.id}
                             dismiss={() => {
-                                setIsSidebarOpen(prev => false);
+                                setIsSidebarOpen(() => false);
                             }}
                             isActive={thread.id === currentThreadId}
+                            pinThread={() => {}}
+                            unpinThread={() => {}}
                         />
                     ))}
                 </Flex>
